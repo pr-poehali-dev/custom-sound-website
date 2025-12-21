@@ -11,17 +11,28 @@ interface ProductCardProps {
   oldPrice?: number;
   discount?: number;
   image: string;
+  onProductClick?: (id: string) => void;
 }
 
-export default function ProductCard({ id, name, price, oldPrice, discount, image }: ProductCardProps) {
+export default function ProductCard({ id, name, price, oldPrice, discount, image, onProductClick }: ProductCardProps) {
   const { addToCart } = useCart();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
     addToCart({ id, name, price, image });
   };
 
+  const handleCardClick = () => {
+    if (onProductClick) {
+      onProductClick(id);
+    }
+  };
+
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/20 animate-fade-in">
+    <Card 
+      className="group overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/20 animate-fade-in cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="relative overflow-hidden bg-secondary">
         <img
           src={image}

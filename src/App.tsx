@@ -7,11 +7,21 @@ import Header from '@/components/Header';
 import HomePage from '@/pages/HomePage';
 import SearchPage from '@/pages/SearchPage';
 import ProfilePage from '@/pages/ProfilePage';
+import ProductDetailPage from '@/pages/ProductDetailPage';
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState<'home' | 'search' | 'profile'>('home');
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+
+  const handleProductClick = (productId: string) => {
+    setSelectedProductId(productId);
+  };
+
+  const handleBackFromProduct = () => {
+    setSelectedProductId(null);
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -19,11 +29,20 @@ const App = () => {
         <Toaster />
         <Sonner />
         <div className="min-h-screen bg-background text-foreground">
-          <Header currentPage={currentPage} onNavigate={setCurrentPage} />
+          <Header currentPage={currentPage} onNavigate={(page) => {
+            setCurrentPage(page);
+            setSelectedProductId(null);
+          }} />
           <main>
-            {currentPage === 'home' && <HomePage />}
-            {currentPage === 'search' && <SearchPage />}
-            {currentPage === 'profile' && <ProfilePage />}
+            {selectedProductId ? (
+              <ProductDetailPage productId={selectedProductId} onBack={handleBackFromProduct} />
+            ) : (
+              <>
+                {currentPage === 'home' && <HomePage onProductClick={handleProductClick} />}
+                {currentPage === 'search' && <SearchPage onProductClick={handleProductClick} />}
+                {currentPage === 'profile' && <ProfilePage />}
+              </>
+            )}
           </main>
           <footer className="border-t border-border mt-auto">
             <div className="container py-12 px-4">

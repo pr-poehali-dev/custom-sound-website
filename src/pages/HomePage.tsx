@@ -43,7 +43,11 @@ const categories = [
   { name: 'Магнитолы', icon: 'Radio', count: 156 },
 ];
 
-export default function HomePage() {
+interface HomePageProps {
+  onProductClick?: (id: string) => void;
+}
+
+export default function HomePage({ onProductClick }: HomePageProps) {
   return (
     <div className="min-h-screen">
       <section className="relative h-[600px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-background via-secondary to-background">
@@ -70,10 +74,10 @@ export default function HomePage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-2">
-            <ProductCard {...featuredProduct} />
+            <ProductCard {...featuredProduct} onProductClick={onProductClick} />
           </div>
           {popularProducts.slice(0, 2).map((product) => (
-            <ProductCard key={product.id} {...product} />
+            <ProductCard key={product.id} {...product} onProductClick={onProductClick} />
           ))}
         </div>
       </section>
@@ -104,7 +108,7 @@ export default function HomePage() {
         <h2 className="text-3xl md:text-4xl font-bold mb-8">Популярные товары</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {popularProducts.map((product) => (
-            <ProductCard key={product.id} {...product} />
+            <ProductCard key={product.id} {...product} onProductClick={onProductClick} />
           ))}
         </div>
       </section>
