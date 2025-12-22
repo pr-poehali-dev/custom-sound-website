@@ -81,7 +81,10 @@ const App = () => {
                 </div>
               </div>
               <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-                <p>&copy; 2024 Custom Sound. Все права защищены.</p>
+                <p>© 2024 Custom Sound. Все права защищены. 
+
+                       ИИН... 
+</p>
               </div>
             </div>
           </footer>
