@@ -3,17 +3,31 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import HomePage from '@/pages/HomePage';
 import SearchPage from '@/pages/SearchPage';
 import ProfilePage from '@/pages/ProfilePage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
+import AuthPage from '@/pages/AuthPage';
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
+
+function AppContent() {
+  const { isAuthenticated } = useAuth();
   const [currentPage, setCurrentPage] = useState<'home' | 'search' | 'profile'>('home');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
 
   const handleProductClick = (productId: string) => {
     setSelectedProductId(productId);
@@ -23,16 +37,30 @@ const App = () => {
     setSelectedProductId(null);
   };
 
+  const handleNavigate = (page: 'home' | 'search' | 'profile') => {
+    if (page === 'profile' && !isAuthenticated) {
+      setShowAuth(true);
+      return;
+    }
+    setCurrentPage(page);
+    setSelectedProductId(null);
+  };
+
+  const handleAuthSuccess = () => {
+    setShowAuth(false);
+    setCurrentPage('profile');
+  };
+
+  if (showAuth) {
+    return <AuthPage onSuccess={handleAuthSuccess} />;
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+    <TooltipProvider>
         <Toaster />
         <Sonner />
         <div className="min-h-screen bg-background text-foreground">
-          <Header currentPage={currentPage} onNavigate={(page) => {
-            setCurrentPage(page);
-            setSelectedProductId(null);
-          }} />
+          <Header currentPage={currentPage} onNavigate={handleNavigate} />
           <main>
             {selectedProductId ? (
               <ProductDetailPage productId={selectedProductId} onBack={handleBackFromProduct} />
@@ -87,8 +115,7 @@ const App = () => {
           </footer>
         </div>
       </TooltipProvider>
-    </QueryClientProvider>
   );
-};
+}
 
 export default App;

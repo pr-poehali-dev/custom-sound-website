@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,12 +7,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ProfilePage() {
   const { items } = useCart();
-  const [name, setName] = useState('Иван Петров');
-  const [email, setEmail] = useState('ivan@example.com');
-  const [phone, setPhone] = useState('+7 (999) 123-45-67');
+  const { user, updateProfile, logout } = useAuth();
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name);
+      setEmail(user.email);
+      setPhone(user.phone);
+    }
+  }, [user]);
+
+  const handleSaveProfile = () => {
+    updateProfile({ name, email, phone });
+  };
 
   const orders = [
     {
@@ -108,10 +122,16 @@ export default function ProfilePage() {
                     className="mt-2"
                   />
                 </div>
-                <Button className="gap-2">
-                  <Icon name="Save" size={18} />
-                  Сохранить изменения
-                </Button>
+                <div className="flex gap-3">
+                  <Button onClick={handleSaveProfile} className="gap-2">
+                    <Icon name="Save" size={18} />
+                    Сохранить изменения
+                  </Button>
+                  <Button onClick={logout} variant="outline" className="gap-2">
+                    <Icon name="LogOut" size={18} />
+                    Выйти
+                  </Button>
+                </div>
               </div>
             </Card>
           </TabsContent>
