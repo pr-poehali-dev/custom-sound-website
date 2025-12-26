@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
-  currentPage: 'home' | 'search' | 'profile';
-  onNavigate: (page: 'home' | 'search' | 'profile') => void;
+  currentPage: 'home' | 'search' | 'profile' | 'admin';
+  onNavigate: (page: 'home' | 'search' | 'profile' | 'admin') => void;
 }
 
 export default function Header({ currentPage, onNavigate }: HeaderProps) {
   const { items, removeFromCart, getTotalPrice, clearCart } = useCart();
+  const { isAdmin } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -54,6 +56,17 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
             >
               Личный кабинет
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => onNavigate('admin')}
+                className={`text-sm font-medium transition-colors hover:text-primary flex items-center gap-2 ${
+                  currentPage === 'admin' ? 'text-primary' : 'text-foreground/80'
+                }`}
+              >
+                <Icon name="Shield" size={16} />
+                Админ-панель
+              </button>
+            )}
           </nav>
         </div>
 
@@ -166,6 +179,17 @@ export default function Header({ currentPage, onNavigate }: HeaderProps) {
                   >
                     Личный кабинет
                   </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => onNavigate('admin')}
+                      className={`text-left py-2 px-4 rounded-lg transition-colors flex items-center gap-2 ${
+                        currentPage === 'admin' ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
+                      }`}
+                    >
+                      <Icon name="Shield" size={18} />
+                      Админ-панель
+                    </button>
+                  )}
                 </nav>
               </SheetContent>
             </Sheet>

@@ -10,6 +10,7 @@ import SearchPage from '@/pages/SearchPage';
 import ProfilePage from '@/pages/ProfilePage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
 import AuthPage from '@/pages/AuthPage';
+import AdminPage from '@/pages/AdminPage';
 
 const queryClient = new QueryClient();
 
@@ -24,8 +25,8 @@ const App = () => {
 };
 
 function AppContent() {
-  const { isAuthenticated } = useAuth();
-  const [currentPage, setCurrentPage] = useState<'home' | 'search' | 'profile'>('home');
+  const { isAuthenticated, isAdmin } = useAuth();
+  const [currentPage, setCurrentPage] = useState<'home' | 'search' | 'profile' | 'admin'>('home');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [showAuth, setShowAuth] = useState(false);
 
@@ -37,9 +38,13 @@ function AppContent() {
     setSelectedProductId(null);
   };
 
-  const handleNavigate = (page: 'home' | 'search' | 'profile') => {
+  const handleNavigate = (page: 'home' | 'search' | 'profile' | 'admin') => {
     if (page === 'profile' && !isAuthenticated) {
       setShowAuth(true);
+      return;
+    }
+    if (page === 'admin' && !isAdmin) {
+      alert('Доступ запрещен');
       return;
     }
     setCurrentPage(page);
@@ -48,7 +53,11 @@ function AppContent() {
 
   const handleAuthSuccess = () => {
     setShowAuth(false);
-    setCurrentPage('profile');
+    if (isAdmin) {
+      setCurrentPage('admin');
+    } else {
+      setCurrentPage('profile');
+    }
   };
 
   if (showAuth) {
@@ -69,6 +78,7 @@ function AppContent() {
                 {currentPage === 'home' && <HomePage onProductClick={handleProductClick} />}
                 {currentPage === 'search' && <SearchPage onProductClick={handleProductClick} />}
                 {currentPage === 'profile' && <ProfilePage />}
+                {currentPage === 'admin' && <AdminPage />}
               </>
             )}
           </main>

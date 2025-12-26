@@ -12,8 +12,11 @@ interface AuthPageProps {
 }
 
 export default function AuthPage({ onSuccess }: AuthPageProps) {
-  const { login, register } = useAuth();
+  const { login, register, resetPassword } = useAuth();
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const [loginData, setLoginData] = useState({
     email: '',
@@ -137,10 +140,63 @@ export default function AuthPage({ onSuccess }: AuthPageProps) {
                 </div>
               )}
 
+              {success && (
+                <div className="bg-primary/10 text-primary px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                  <Icon name="CheckCircle2" size={16} />
+                  {success}
+                </div>
+              )}
+
               <Button type="submit" className="w-full gap-2">
                 <Icon name="LogIn" size={18} />
                 Войти
               </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-sm"
+                onClick={() => setShowReset(!showReset)}
+              >
+                Забыли пароль?
+              </Button>
+
+              {showReset && (
+                <div className="space-y-3 pt-2 border-t">
+                  <Label htmlFor="reset-email">Email для восстановления</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full gap-2"
+                    onClick={async () => {
+                      setError('');
+                      setSuccess('');
+                      if (!resetEmail) {
+                        setError('Введите email');
+                        return;
+                      }
+                      try {
+                        await resetPassword(resetEmail);
+                        setSuccess('Временный пароль отправлен!');
+                        setShowReset(false);
+                        setResetEmail('');
+                      } catch (err) {
+                        setError(err instanceof Error ? err.message : 'Ошибка');
+                      }
+                    }}
+                  >
+                    <Icon name="Mail" size={18} />
+                    Отправить новый пароль
+                  </Button>
+                </div>
+              )}
             </form>
           </TabsContent>
 
