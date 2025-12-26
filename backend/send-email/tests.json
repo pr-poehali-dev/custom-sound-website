@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "Send email notification",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "to_email": "customer@example.com",
+        "order_id": "ORD-001",
+        "status": "В пути",
+        "order_total": 25000
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Missing required fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "to_email": "customer@example.com"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

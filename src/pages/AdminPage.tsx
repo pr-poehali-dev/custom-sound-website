@@ -26,7 +26,8 @@ interface Order {
 export default function AdminPage() {
   const { user, logout } = useAuth();
   const [users, setUsers] = useState<StoredUser[]>([]);
-  const [orders] = useState<Order[]>([
+  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
+  const [orders, setOrders] = useState<Order[]>([
     {
       id: 'ORD-001',
       date: '25.12.2024',
@@ -102,6 +103,43 @@ export default function AdminPage() {
     }
     alert('Товар добавлен (демо-режим)');
     setNewProduct({ name: '', price: '', category: '', stock: '' });
+  };
+
+  const handleStatusChange = async (orderId: string, newStatus: string, customerEmail: string, orderTotal: number) => {
+    setSendingEmail(orderId);
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/73ba6ca8-cb98-46dc-8c49-72ae42a59f51', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to_email: customerEmail,
+          order_id: orderId,
+          status: newStatus,
+          order_total: orderTotal,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert(result.demo 
+          ? `Email отправлен (демо-режим):\n\nДля полноценной отправки настройте SMTP в секретах проекта.\n\nБудет отправлено на: ${customerEmail}`
+          : `Email успешно отправлен на ${customerEmail}`);
+        
+        setOrders(orders.map(order => 
+          order.id === orderId ? { ...order, status: newStatus } : order
+        ));
+      } else {
+        alert('Ошибка отправки email: ' + (result.error || 'Неизвестная ошибка'));
+      }
+    } catch (error) {
+      alert('Ошибка подключения к серверу: ' + error);
+    } finally {
+      setSendingEmail(null);
+    }
   };
 
   const stats = {
@@ -195,7 +233,9 @@ export default function AdminPage() {
                           <h3 className="font-semibold text-lg">Заказ {order.id}</h3>
                           <select
                             className="text-xs px-2 py-1 rounded-full border bg-background"
-                            defaultValue={order.status}
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value, order.customerEmail, order.total)}
+                            disabled={sendingEmail === order.id}
                           >
                             <option>Новый</option>
                             <option>В обработке</option>
@@ -203,6 +243,9 @@ export default function AdminPage() {
                             <option>Доставлен</option>
                             <option>Отменен</option>
                           </select>
+                          {sendingEmail === order.id && (
+                            <Icon name="Loader2" size={16} className="animate-spin text-primary" />
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {order.date} • {order.items} товаров • {order.customerEmail}
@@ -216,9 +259,20 @@ export default function AdminPage() {
                           {order.total.toLocaleString()} ₽
                         </p>
                       </div>
-                      <Button variant="outline" size="icon">
-                        <Icon name="Eye" size={18} />
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="icon">
+                          <Icon name="Eye" size={18} />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="icon"
+                          onClick={() => handleStatusChange(order.id, order.status, order.customerEmail, order.total)}
+                          disabled={sendingEmail === order.id}
+                          title="Отправить email уведомление"
+                        >
+                          <Icon name="Mail" size={18} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </Card>
